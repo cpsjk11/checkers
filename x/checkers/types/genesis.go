@@ -1,6 +1,8 @@
 package types
 
-// this line is used by starport scaffolding # genesis/types/import
+import (
+	"fmt"
+)
 
 // DefaultIndex is the default global index
 const DefaultIndex uint64 = 1
@@ -8,6 +10,10 @@ const DefaultIndex uint64 = 1
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
+		SystemInfo:    SystemInfo{
+			NextId: uint64(DefaultIndex),
+		},
+		StoreGameList: []StoreGame{},
 		// this line is used by starport scaffolding # genesis/types/default
 		Params: DefaultParams(),
 	}
@@ -16,6 +22,16 @@ func DefaultGenesis() *GenesisState {
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
+	// Check for duplicated index in storeGame
+	storeGameIndexMap := make(map[string]struct{})
+
+	for _, elem := range gs.StoreGameList {
+		index := string(StoreGameKey(elem.Index))
+		if _, ok := storeGameIndexMap[index]; ok {
+			return fmt.Errorf("duplicated index for storeGame")
+		}
+		storeGameIndexMap[index] = struct{}{}
+	}
 	// this line is used by starport scaffolding # genesis/types/validate
 
 	return gs.Params.Validate()

@@ -6,18 +6,30 @@ import { msgTypes } from './registry';
 import { IgniteClient } from "../client"
 import { MissingWalletError } from "../helpers"
 import { Api } from "./rest";
-import { QueryParamsResponse } from "./types/checkers/checkers/query";
+import { QueryGetSystemInfoRequest } from "./types/checkers/checkers/query";
+import { QueryGetSystemInfoResponse } from "./types/checkers/checkers/query";
 import { Params } from "./types/checkers/checkers/params";
-import { GenesisState } from "./types/checkers/checkers/genesis";
-import { MsgUpdateParams } from "./types/checkers/checkers/tx";
 import { MsgUpdateParamsResponse } from "./types/checkers/checkers/tx";
+import { MsgUpdateParams } from "./types/checkers/checkers/tx";
 import { QueryParamsRequest } from "./types/checkers/checkers/query";
+import { MsgCreatePost } from "./types/checkers/checkers/tx";
+import { QueryParamsResponse } from "./types/checkers/checkers/query";
+import { GenesisState } from "./types/checkers/checkers/genesis";
+import { SystemInfo } from "./types/checkers/checkers/system_info";
+import { MsgCreatePostResponse } from "./types/checkers/checkers/tx";
 
+import { StoreGame as typeStoreGame} from "./types"
 
-export { QueryParamsResponse, Params, GenesisState, MsgUpdateParams, MsgUpdateParamsResponse, QueryParamsRequest };
+export { QueryGetSystemInfoRequest, QueryGetSystemInfoResponse, Params, MsgUpdateParamsResponse, MsgUpdateParams, QueryParamsRequest, MsgCreatePost, QueryParamsResponse, GenesisState, SystemInfo, MsgCreatePostResponse };
 
-type sendQueryParamsResponseParams = {
-  value: QueryParamsResponse,
+type sendQueryGetSystemInfoRequestParams = {
+  value: QueryGetSystemInfoRequest,
+  fee?: StdFee,
+  memo?: string
+};
+
+type sendQueryGetSystemInfoResponseParams = {
+  value: QueryGetSystemInfoResponse,
   fee?: StdFee,
   memo?: string
 };
@@ -28,8 +40,8 @@ type sendParamsParams = {
   memo?: string
 };
 
-type sendGenesisStateParams = {
-  value: GenesisState,
+type sendMsgUpdateParamsResponseParams = {
+  value: MsgUpdateParamsResponse,
   fee?: StdFee,
   memo?: string
 };
@@ -40,41 +52,85 @@ type sendMsgUpdateParamsParams = {
   memo?: string
 };
 
-type sendMsgUpdateParamsResponseParams = {
-  value: MsgUpdateParamsResponse,
-  fee?: StdFee,
-  memo?: string
-};
-
 type sendQueryParamsRequestParams = {
   value: QueryParamsRequest,
   fee?: StdFee,
   memo?: string
 };
 
+type sendMsgCreatePostParams = {
+  value: MsgCreatePost,
+  fee?: StdFee,
+  memo?: string
+};
 
-type queryParamsResponseParams = {
+type sendQueryParamsResponseParams = {
   value: QueryParamsResponse,
+  fee?: StdFee,
+  memo?: string
+};
+
+type sendGenesisStateParams = {
+  value: GenesisState,
+  fee?: StdFee,
+  memo?: string
+};
+
+type sendSystemInfoParams = {
+  value: SystemInfo,
+  fee?: StdFee,
+  memo?: string
+};
+
+type sendMsgCreatePostResponseParams = {
+  value: MsgCreatePostResponse,
+  fee?: StdFee,
+  memo?: string
+};
+
+
+type queryGetSystemInfoRequestParams = {
+  value: QueryGetSystemInfoRequest,
+};
+
+type queryGetSystemInfoResponseParams = {
+  value: QueryGetSystemInfoResponse,
 };
 
 type paramsParams = {
   value: Params,
 };
 
-type genesisStateParams = {
-  value: GenesisState,
+type msgUpdateParamsResponseParams = {
+  value: MsgUpdateParamsResponse,
 };
 
 type msgUpdateParamsParams = {
   value: MsgUpdateParams,
 };
 
-type msgUpdateParamsResponseParams = {
-  value: MsgUpdateParamsResponse,
-};
-
 type queryParamsRequestParams = {
   value: QueryParamsRequest,
+};
+
+type msgCreatePostParams = {
+  value: MsgCreatePost,
+};
+
+type queryParamsResponseParams = {
+  value: QueryParamsResponse,
+};
+
+type genesisStateParams = {
+  value: GenesisState,
+};
+
+type systemInfoParams = {
+  value: SystemInfo,
+};
+
+type msgCreatePostResponseParams = {
+  value: MsgCreatePostResponse,
 };
 
 
@@ -107,17 +163,31 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 
   return {
 		
-		async sendQueryParamsResponse({ value, fee, memo }: sendQueryParamsResponseParams): Promise<DeliverTxResponse> {
+		async sendQueryGetSystemInfoRequest({ value, fee, memo }: sendQueryGetSystemInfoRequestParams): Promise<DeliverTxResponse> {
 			if (!signer) {
-					throw new Error('TxClient:sendQueryParamsResponse: Unable to sign Tx. Signer is not present.')
+					throw new Error('TxClient:sendQueryGetSystemInfoRequest: Unable to sign Tx. Signer is not present.')
 			}
 			try {			
 				const { address } = (await signer.getAccounts())[0]; 
 				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
-				let msg = this.queryParamsResponse({ value: QueryParamsResponse.fromPartial(value) })
+				let msg = this.queryGetSystemInfoRequest({ value: QueryGetSystemInfoRequest.fromPartial(value) })
 				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
 			} catch (e: any) {
-				throw new Error('TxClient:sendQueryParamsResponse: Could not broadcast Tx: '+ e.message)
+				throw new Error('TxClient:sendQueryGetSystemInfoRequest: Could not broadcast Tx: '+ e.message)
+			}
+		},
+		
+		async sendQueryGetSystemInfoResponse({ value, fee, memo }: sendQueryGetSystemInfoResponseParams): Promise<DeliverTxResponse> {
+			if (!signer) {
+					throw new Error('TxClient:sendQueryGetSystemInfoResponse: Unable to sign Tx. Signer is not present.')
+			}
+			try {			
+				const { address } = (await signer.getAccounts())[0]; 
+				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
+				let msg = this.queryGetSystemInfoResponse({ value: QueryGetSystemInfoResponse.fromPartial(value) })
+				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
+			} catch (e: any) {
+				throw new Error('TxClient:sendQueryGetSystemInfoResponse: Could not broadcast Tx: '+ e.message)
 			}
 		},
 		
@@ -135,17 +205,17 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 			}
 		},
 		
-		async sendGenesisState({ value, fee, memo }: sendGenesisStateParams): Promise<DeliverTxResponse> {
+		async sendMsgUpdateParamsResponse({ value, fee, memo }: sendMsgUpdateParamsResponseParams): Promise<DeliverTxResponse> {
 			if (!signer) {
-					throw new Error('TxClient:sendGenesisState: Unable to sign Tx. Signer is not present.')
+					throw new Error('TxClient:sendMsgUpdateParamsResponse: Unable to sign Tx. Signer is not present.')
 			}
 			try {			
 				const { address } = (await signer.getAccounts())[0]; 
 				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
-				let msg = this.genesisState({ value: GenesisState.fromPartial(value) })
+				let msg = this.msgUpdateParamsResponse({ value: MsgUpdateParamsResponse.fromPartial(value) })
 				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
 			} catch (e: any) {
-				throw new Error('TxClient:sendGenesisState: Could not broadcast Tx: '+ e.message)
+				throw new Error('TxClient:sendMsgUpdateParamsResponse: Could not broadcast Tx: '+ e.message)
 			}
 		},
 		
@@ -163,20 +233,6 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 			}
 		},
 		
-		async sendMsgUpdateParamsResponse({ value, fee, memo }: sendMsgUpdateParamsResponseParams): Promise<DeliverTxResponse> {
-			if (!signer) {
-					throw new Error('TxClient:sendMsgUpdateParamsResponse: Unable to sign Tx. Signer is not present.')
-			}
-			try {			
-				const { address } = (await signer.getAccounts())[0]; 
-				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
-				let msg = this.msgUpdateParamsResponse({ value: MsgUpdateParamsResponse.fromPartial(value) })
-				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
-			} catch (e: any) {
-				throw new Error('TxClient:sendMsgUpdateParamsResponse: Could not broadcast Tx: '+ e.message)
-			}
-		},
-		
 		async sendQueryParamsRequest({ value, fee, memo }: sendQueryParamsRequestParams): Promise<DeliverTxResponse> {
 			if (!signer) {
 					throw new Error('TxClient:sendQueryParamsRequest: Unable to sign Tx. Signer is not present.')
@@ -191,12 +247,90 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 			}
 		},
 		
-		
-		queryParamsResponse({ value }: queryParamsResponseParams): EncodeObject {
-			try {
-				return { typeUrl: "/checkers.checkers.QueryParamsResponse", value: QueryParamsResponse.fromPartial( value ) }  
+		async sendMsgCreatePost({ value, fee, memo }: sendMsgCreatePostParams): Promise<DeliverTxResponse> {
+			if (!signer) {
+					throw new Error('TxClient:sendMsgCreatePost: Unable to sign Tx. Signer is not present.')
+			}
+			try {			
+				const { address } = (await signer.getAccounts())[0]; 
+				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
+				let msg = this.msgCreatePost({ value: MsgCreatePost.fromPartial(value) })
+				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
 			} catch (e: any) {
-				throw new Error('TxClient:QueryParamsResponse: Could not create message: ' + e.message)
+				throw new Error('TxClient:sendMsgCreatePost: Could not broadcast Tx: '+ e.message)
+			}
+		},
+		
+		async sendQueryParamsResponse({ value, fee, memo }: sendQueryParamsResponseParams): Promise<DeliverTxResponse> {
+			if (!signer) {
+					throw new Error('TxClient:sendQueryParamsResponse: Unable to sign Tx. Signer is not present.')
+			}
+			try {			
+				const { address } = (await signer.getAccounts())[0]; 
+				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
+				let msg = this.queryParamsResponse({ value: QueryParamsResponse.fromPartial(value) })
+				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
+			} catch (e: any) {
+				throw new Error('TxClient:sendQueryParamsResponse: Could not broadcast Tx: '+ e.message)
+			}
+		},
+		
+		async sendGenesisState({ value, fee, memo }: sendGenesisStateParams): Promise<DeliverTxResponse> {
+			if (!signer) {
+					throw new Error('TxClient:sendGenesisState: Unable to sign Tx. Signer is not present.')
+			}
+			try {			
+				const { address } = (await signer.getAccounts())[0]; 
+				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
+				let msg = this.genesisState({ value: GenesisState.fromPartial(value) })
+				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
+			} catch (e: any) {
+				throw new Error('TxClient:sendGenesisState: Could not broadcast Tx: '+ e.message)
+			}
+		},
+		
+		async sendSystemInfo({ value, fee, memo }: sendSystemInfoParams): Promise<DeliverTxResponse> {
+			if (!signer) {
+					throw new Error('TxClient:sendSystemInfo: Unable to sign Tx. Signer is not present.')
+			}
+			try {			
+				const { address } = (await signer.getAccounts())[0]; 
+				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
+				let msg = this.systemInfo({ value: SystemInfo.fromPartial(value) })
+				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
+			} catch (e: any) {
+				throw new Error('TxClient:sendSystemInfo: Could not broadcast Tx: '+ e.message)
+			}
+		},
+		
+		async sendMsgCreatePostResponse({ value, fee, memo }: sendMsgCreatePostResponseParams): Promise<DeliverTxResponse> {
+			if (!signer) {
+					throw new Error('TxClient:sendMsgCreatePostResponse: Unable to sign Tx. Signer is not present.')
+			}
+			try {			
+				const { address } = (await signer.getAccounts())[0]; 
+				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry});
+				let msg = this.msgCreatePostResponse({ value: MsgCreatePostResponse.fromPartial(value) })
+				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
+			} catch (e: any) {
+				throw new Error('TxClient:sendMsgCreatePostResponse: Could not broadcast Tx: '+ e.message)
+			}
+		},
+		
+		
+		queryGetSystemInfoRequest({ value }: queryGetSystemInfoRequestParams): EncodeObject {
+			try {
+				return { typeUrl: "/checkers.checkers.QueryGetSystemInfoRequest", value: QueryGetSystemInfoRequest.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:QueryGetSystemInfoRequest: Could not create message: ' + e.message)
+			}
+		},
+		
+		queryGetSystemInfoResponse({ value }: queryGetSystemInfoResponseParams): EncodeObject {
+			try {
+				return { typeUrl: "/checkers.checkers.QueryGetSystemInfoResponse", value: QueryGetSystemInfoResponse.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:QueryGetSystemInfoResponse: Could not create message: ' + e.message)
 			}
 		},
 		
@@ -208,11 +342,11 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 			}
 		},
 		
-		genesisState({ value }: genesisStateParams): EncodeObject {
+		msgUpdateParamsResponse({ value }: msgUpdateParamsResponseParams): EncodeObject {
 			try {
-				return { typeUrl: "/checkers.checkers.GenesisState", value: GenesisState.fromPartial( value ) }  
+				return { typeUrl: "/checkers.checkers.MsgUpdateParamsResponse", value: MsgUpdateParamsResponse.fromPartial( value ) }  
 			} catch (e: any) {
-				throw new Error('TxClient:GenesisState: Could not create message: ' + e.message)
+				throw new Error('TxClient:MsgUpdateParamsResponse: Could not create message: ' + e.message)
 			}
 		},
 		
@@ -224,19 +358,51 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 			}
 		},
 		
-		msgUpdateParamsResponse({ value }: msgUpdateParamsResponseParams): EncodeObject {
-			try {
-				return { typeUrl: "/checkers.checkers.MsgUpdateParamsResponse", value: MsgUpdateParamsResponse.fromPartial( value ) }  
-			} catch (e: any) {
-				throw new Error('TxClient:MsgUpdateParamsResponse: Could not create message: ' + e.message)
-			}
-		},
-		
 		queryParamsRequest({ value }: queryParamsRequestParams): EncodeObject {
 			try {
 				return { typeUrl: "/checkers.checkers.QueryParamsRequest", value: QueryParamsRequest.fromPartial( value ) }  
 			} catch (e: any) {
 				throw new Error('TxClient:QueryParamsRequest: Could not create message: ' + e.message)
+			}
+		},
+		
+		msgCreatePost({ value }: msgCreatePostParams): EncodeObject {
+			try {
+				return { typeUrl: "/checkers.checkers.MsgCreatePost", value: MsgCreatePost.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:MsgCreatePost: Could not create message: ' + e.message)
+			}
+		},
+		
+		queryParamsResponse({ value }: queryParamsResponseParams): EncodeObject {
+			try {
+				return { typeUrl: "/checkers.checkers.QueryParamsResponse", value: QueryParamsResponse.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:QueryParamsResponse: Could not create message: ' + e.message)
+			}
+		},
+		
+		genesisState({ value }: genesisStateParams): EncodeObject {
+			try {
+				return { typeUrl: "/checkers.checkers.GenesisState", value: GenesisState.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:GenesisState: Could not create message: ' + e.message)
+			}
+		},
+		
+		systemInfo({ value }: systemInfoParams): EncodeObject {
+			try {
+				return { typeUrl: "/checkers.checkers.SystemInfo", value: SystemInfo.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:SystemInfo: Could not create message: ' + e.message)
+			}
+		},
+		
+		msgCreatePostResponse({ value }: msgCreatePostResponseParams): EncodeObject {
+			try {
+				return { typeUrl: "/checkers.checkers.MsgCreatePostResponse", value: MsgCreatePostResponse.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:MsgCreatePostResponse: Could not create message: ' + e.message)
 			}
 		},
 		
@@ -262,6 +428,7 @@ class SDKModule {
 		this.query = queryClient({ addr: client.env.apiURL });		
 		this.updateTX(client);
 		this.structure =  {
+						StoreGame: getStructure(typeStoreGame.fromPartial({})),
 						
 		};
 		client.on('signer-changed',(signer) => {			

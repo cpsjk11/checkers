@@ -20,27 +20,70 @@ export interface Status {
   details?: { "@type"?: string }[];
 }
 
+export interface PageRequest {
+  /** @format byte */
+  key?: string;
+
+  /** @format uint64 */
+  offset?: string;
+
+  /** @format uint64 */
+  limit?: string;
+  count_total?: boolean;
+  reverse?: boolean;
+}
+
+export interface PageResponse {
+  /** @format byte */
+  next_key?: string;
+
+  /** @format uint64 */
+  total?: string;
+}
+
+export interface QueryAllStoreGameResponse {
+  storeGame?: { index?: string; board?: string; turn?: string; black?: string; red?: string }[];
+  pagination?: { next_key?: string; total?: string };
+}
+
+export interface QueryGetStoreGameResponse {
+  storeGame?: { index?: string; board?: string; turn?: string; black?: string; red?: string };
+}
+
+export interface QueryGetSystemInfoResponse {
+  SystemInfo?: { nextId?: string };
+}
+
 export interface QueryParamsResponse {
   params?: object;
 }
 
 export type CheckersParams = object;
 
+export interface CheckersStoreGame {
+  index?: string;
+  board?: string;
+  turn?: string;
+  black?: string;
+  red?: string;
+}
+
+export interface CheckersSystemInfo {
+  /** @format uint64 */
+  nextId?: string;
+}
+
+export type MsgCreatePostResponse = object;
+
 export type MsgUpdateParamsResponse = object;
 
 export type Params = object;
 
-import axios, {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  ResponseType,
-} from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, ResponseType } from "axios";
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams
-  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
+export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -55,15 +98,11 @@ export interface FullRequestParams
   body?: unknown;
 }
 
-export type RequestParams = Omit<
-  FullRequestParams,
-  "body" | "method" | "query" | "path"
->;
+export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
 
-export interface ApiConfig<SecurityDataType = unknown>
-  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
+export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
   securityWorker?: (
-    securityData: SecurityDataType | null
+    securityData: SecurityDataType | null,
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
   secure?: boolean;
   format?: ResponseType;
@@ -82,16 +121,8 @@ export class HttpClient<SecurityDataType = unknown> {
   private secure?: boolean;
   private format?: ResponseType;
 
-  constructor({
-    securityWorker,
-    secure,
-    format,
-    ...axiosConfig
-  }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({
-      ...axiosConfig,
-      baseURL: axiosConfig.baseURL || "",
-    });
+  constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -101,10 +132,7 @@ export class HttpClient<SecurityDataType = unknown> {
     this.securityData = data;
   };
 
-  private mergeRequestParams(
-    params1: AxiosRequestConfig,
-    params2?: AxiosRequestConfig
-  ): AxiosRequestConfig {
+  private mergeRequestParams(params1: AxiosRequestConfig, params2?: AxiosRequestConfig): AxiosRequestConfig {
     return {
       ...this.instance.defaults,
       ...params1,
@@ -126,7 +154,7 @@ export class HttpClient<SecurityDataType = unknown> {
           ? property
           : typeof property === "object" && property !== null
           ? JSON.stringify(property)
-          : `${property}`
+          : `${property}`,
       );
       return formData;
     }, new FormData());
@@ -149,12 +177,7 @@ export class HttpClient<SecurityDataType = unknown> {
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = (format && this.format) || void 0;
 
-    if (
-      type === ContentType.FormData &&
-      body &&
-      body !== null &&
-      typeof body === "object"
-    ) {
+    if (type === ContentType.FormData && body && body !== null && typeof body === "object") {
       requestParams.headers.common = { Accept: "*/*" };
       requestParams.headers.post = {};
       requestParams.headers.put = {};
@@ -165,9 +188,7 @@ export class HttpClient<SecurityDataType = unknown> {
     return this.instance.request({
       ...requestParams,
       headers: {
-        ...(type && type !== ContentType.FormData
-          ? { "Content-Type": type }
-          : {}),
+        ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
         ...(requestParams.headers || {}),
       },
       params: query,
@@ -181,9 +202,7 @@ export class HttpClient<SecurityDataType = unknown> {
 /**
  * @title HTTP API Console checkers.checkers
  */
-export class Api<
-  SecurityDataType extends unknown
-> extends HttpClient<SecurityDataType> {
+export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
   /**
    * No description
    *
@@ -192,11 +211,72 @@ export class Api<
    * @request GET:/alice/checkers/checkers/params
    */
   queryParams = (params: RequestParams = {}) =>
+    this.request<{ params?: object }, { code?: number; message?: string; details?: { "@type"?: string }[] }>({
+      path: `/alice/checkers/checkers/params`,
+      method: "GET",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryStoreGameAll
+   * @request GET:/alice/checkers/checkers/store_game
+   */
+  queryStoreGameAll = (
+    query?: {
+      "pagination.key"?: string;
+      "pagination.offset"?: string;
+      "pagination.limit"?: string;
+      "pagination.count_total"?: boolean;
+      "pagination.reverse"?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
     this.request<
-      { params?: object },
+      {
+        storeGame?: { index?: string; board?: string; turn?: string; black?: string; red?: string }[];
+        pagination?: { next_key?: string; total?: string };
+      },
       { code?: number; message?: string; details?: { "@type"?: string }[] }
     >({
-      path: `/alice/checkers/checkers/params`,
+      path: `/alice/checkers/checkers/store_game`,
+      method: "GET",
+      query: query,
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryStoreGame
+   * @request GET:/alice/checkers/checkers/store_game/{index}
+   */
+  queryStoreGame = (index: string, params: RequestParams = {}) =>
+    this.request<
+      { storeGame?: { index?: string; board?: string; turn?: string; black?: string; red?: string } },
+      { code?: number; message?: string; details?: { "@type"?: string }[] }
+    >({
+      path: `/alice/checkers/checkers/store_game/${index}`,
+      method: "GET",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QuerySystemInfo
+   * @request GET:/alice/checkers/checkers/system_info
+   */
+  querySystemInfo = (params: RequestParams = {}) =>
+    this.request<
+      { SystemInfo?: { nextId?: string } },
+      { code?: number; message?: string; details?: { "@type"?: string }[] }
+    >({
+      path: `/alice/checkers/checkers/system_info`,
       method: "GET",
       ...params,
     });

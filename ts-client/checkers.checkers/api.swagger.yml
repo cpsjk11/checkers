@@ -35,6 +35,165 @@ paths:
                   additionalProperties: {}
       tags:
         - Query
+  /alice/checkers/checkers/store_game:
+    get:
+      operationId: Query_StoreGameAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              storeGame:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    index:
+                      type: string
+                    board:
+                      type: string
+                    turn:
+                      type: string
+                    black:
+                      type: string
+                    red:
+                      type: string
+              pagination:
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                  total:
+                    type: string
+                    format: uint64
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pagination.key
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /alice/checkers/checkers/store_game/{index}:
+    get:
+      operationId: Query_StoreGame
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              storeGame:
+                type: object
+                properties:
+                  index:
+                    type: string
+                  board:
+                    type: string
+                  turn:
+                    type: string
+                  black:
+                    type: string
+                  red:
+                    type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: index
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
+  /alice/checkers/checkers/system_info:
+    get:
+      operationId: Query_SystemInfo
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              SystemInfo:
+                type: object
+                properties:
+                  nextId:
+                    type: string
+                    format: uint64
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      tags:
+        - Query
 definitions:
   Any:
     type: object
@@ -58,12 +217,110 @@ definitions:
             '@type':
               type: string
           additionalProperties: {}
+  PageRequest:
+    type: object
+    properties:
+      key:
+        type: string
+        format: byte
+      offset:
+        type: string
+        format: uint64
+      limit:
+        type: string
+        format: uint64
+      count_total:
+        type: boolean
+      reverse:
+        type: boolean
+  PageResponse:
+    type: object
+    properties:
+      next_key:
+        type: string
+        format: byte
+      total:
+        type: string
+        format: uint64
+  QueryAllStoreGameResponse:
+    type: object
+    properties:
+      storeGame:
+        type: array
+        items:
+          type: object
+          properties:
+            index:
+              type: string
+            board:
+              type: string
+            turn:
+              type: string
+            black:
+              type: string
+            red:
+              type: string
+      pagination:
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+          total:
+            type: string
+            format: uint64
+  QueryGetStoreGameResponse:
+    type: object
+    properties:
+      storeGame:
+        type: object
+        properties:
+          index:
+            type: string
+          board:
+            type: string
+          turn:
+            type: string
+          black:
+            type: string
+          red:
+            type: string
+  QueryGetSystemInfoResponse:
+    type: object
+    properties:
+      SystemInfo:
+        type: object
+        properties:
+          nextId:
+            type: string
+            format: uint64
   QueryParamsResponse:
     type: object
     properties:
       params:
         type: object
   checkers.Params:
+    type: object
+  checkers.StoreGame:
+    type: object
+    properties:
+      index:
+        type: string
+      board:
+        type: string
+      turn:
+        type: string
+      black:
+        type: string
+      red:
+        type: string
+  checkers.SystemInfo:
+    type: object
+    properties:
+      nextId:
+        type: string
+        format: uint64
+  MsgCreatePostResponse:
     type: object
   MsgUpdateParamsResponse:
     type: object
